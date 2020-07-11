@@ -10,18 +10,41 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Main {
 
+    public final static String DEFAULT_TARGET_STRING = "Everything";
+    public final static String LINK_STARTED_WITH = "D:";
+    public final static int MAX_SEARCH_DEPTH = 2;
+
+    private final static int MAX_THREADS_NUMBER = 5;
+    private final static int CORE_THREADS_NUMBER = 2;
+
+    public static AtomicInteger currentDepth = new AtomicInteger(0);
+    public static ConcurrentHashMap<String, Object> searchingResults = new ConcurrentHashMap<>();
+
+
     private static String resourcePath;
     private static String targetString;
-    private final static String DEFAULT_TARGET_STRING = "Everything Ok";
+    public static ForkJoinPool forkJoinPool = new ForkJoinPool(CORE_THREADS_NUMBER);
 
 
     public static void main(String[] args) throws IOException {
 
         checkInputs(args);
-    Optional<Elements> allResourceElementsOpt = findAllPageElements(new File(resourcePath));
+        forkJoinPool.invoke(new SearchRecursiveAction(resourcePath, DEFAULT_TARGET_STRING));
+
+        System.out.println(currentDepth);
+        for (String str : searchingResults.keySet()
+                ) {
+            System.out.println(str);
+        }
+
+      /*  Optional<Elements> allResourceElementsOpt = findAllPageElements(resourcePath);
 
         if (!allResourceElementsOpt.isPresent()) {
             System.out.println("No elements found");
@@ -33,32 +56,61 @@ public class Main {
             System.out.println("No elements found");
             System.exit(1);
         }
-
-        for (Element element: allResourceElements
-             ) {
+*/
+       /* for (Element element : allResourceElements
+                ) {
             System.out.println("***");
-            for (Attribute attribute: element.attributes()
-                 ) {
+            for (Attribute attribute : element.attributes()
+                    ) {
                 System.out.println(attribute);
             }
-        }
+        }*/
 
-        Document doc = Jsoup.parse(
+      /*  Document doc = Jsoup.parse(
                 new File(resourcePath),
                 "utf8",
-                new File(resourcePath).getAbsolutePath());
-  //      System.out.println(doc.text());
-  //    System.out.println(doc.html());
-  //      System.out.println(doc.toString());
-       System.out.println(doc.wholeText());
-       System.out.println(doc.wholeText().contains(DEFAULT_TARGET_STRING));
+                new File(resourcePath).getAbsolutePath());*/
+        //      System.out.println(doc.text());
+        //    System.out.println(doc.html());
+        //      System.out.println(doc.toString());
+        //  System.out.println(doc.wholeText());
+    /*      System.out.println(doc.wholeText().contains(DEFAULT_TARGET_STRING));
+
+        String lincRegex = "a[href^=" + LINK_STARTED_WITH + "]";
+
+        Elements links = doc.select(lincRegex);
+        for (Element e : links
+                ) {
+            System.out.println(e.toString());
+            System.out.println(e.attr("href"));
+            System.out.println("ATTRS:");
+            for (Attribute a : e.attributes()
+                    ) {
+                System.out.println(a.toString());
+            }
+            System.out.println("*****");
+        }
+
+        List<String> urls = links.stream().map(e -> e.attr("href")).collect(Collectors.toList());*/
+
+        /*for (String url: urls
+             ) {
+            System.out.println(url);
+        }*/
 
 
     }
 
 
-    private static Optional<Elements> findAllPageElements(File htmlFile) {
+    private static Optional<Elements> findAllPageElements(String resourcePath) {
+
+        File htmlFile = new File(resourcePath);
+
         try {
+            /*
+             * TO DO
+             * Document doc = Jsoup.connect(resourcePath).get();
+             * */
             Document doc = Jsoup.parse(
                     htmlFile,
                     "utf8",
