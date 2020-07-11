@@ -18,11 +18,11 @@ import java.util.stream.Collectors;
 public class Main {
 
     public final static String DEFAULT_TARGET_STRING = "Everything";
-    public final static String LINK_STARTED_WITH = "D:";
+    public final static String LINK_STARTED_WITH = "https";
     public final static int MAX_SEARCH_DEPTH = 2;
 
     private final static int MAX_THREADS_NUMBER = 5;
-    private final static int CORE_THREADS_NUMBER = 2;
+    private final static int CORE_THREADS_NUMBER = 3;
 
     public static AtomicInteger currentDepth = new AtomicInteger(0);
     public static ConcurrentHashMap<String, Object> searchingResults = new ConcurrentHashMap<>();
@@ -36,9 +36,9 @@ public class Main {
     public static void main(String[] args) throws IOException {
 
         checkInputs(args);
-        forkJoinPool.invoke(new SearchRecursiveAction(resourcePath, DEFAULT_TARGET_STRING));
+        forkJoinPool.invoke(new SearchRecursiveAction(resourcePath, targetString));
 
-        System.out.println(currentDepth);
+        System.out.println("currentDepth = " + currentDepth);
         for (String str : searchingResults.keySet()
                 ) {
             System.out.println(str);
@@ -140,14 +140,8 @@ public class Main {
             System.out.println("Not enough arguments");
             System.exit(1);
         } else {
-            File file1 = new File(args[0]);
-            if (file1.isFile()) {
-                resourcePath = args[0];
-                targetString = args[1];
-            } else {
-                System.out.println("First - must be filepath argument");
-                System.exit(1);
-            }
+            resourcePath = args[0];
+            targetString = args[1];
         }
         System.out.println("******Inputs********");
         for (int i = 0; i < 2; i++) {

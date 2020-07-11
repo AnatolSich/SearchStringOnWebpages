@@ -1,5 +1,6 @@
 package com.developex;
 
+import org.jsoup.Connection;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
@@ -18,7 +19,6 @@ import static com.developex.Main.*;
 
 public class SearchRecursiveAction extends RecursiveAction {
 
-    //  private int[] arr;
     private String url;
     private String text; //remove
 
@@ -29,12 +29,14 @@ public class SearchRecursiveAction extends RecursiveAction {
 
     @Override
     protected void compute() {
-
-        if (currentDepth.intValue() < MAX_SEARCH_DEPTH) {
-            ForkJoinTask.invokeAll(createSubactions());
-        }
         processing(url, text);
 
+        if (currentDepth.intValue() < MAX_SEARCH_DEPTH) {
+            Collection<SearchRecursiveAction> collection = createSubactions();
+            if (!collection.isEmpty()) {
+                ForkJoinTask.invokeAll(collection);
+            }
+        }
     }
 
     private Collection<SearchRecursiveAction> createSubactions() {
@@ -48,7 +50,7 @@ public class SearchRecursiveAction extends RecursiveAction {
         List<String> urls = links.stream().map(e -> e.attr("href")).collect(Collectors.toList());
 
         if (!urls.isEmpty()) {
-            currentDepth.incrementAndGet();
+            System.out.println("Increment currentDepth = " + currentDepth.incrementAndGet());
         }
 
         for (String subUrl : urls
@@ -59,29 +61,26 @@ public class SearchRecursiveAction extends RecursiveAction {
     }
 
     private void processing(String url, String text) {
-        System.out.println("Start proc");
+        System.out.println("Start proc. Url = " + url + " id = " + Thread.currentThread().getId());
         Document doc = convertToDoc(url);
-        if (doc.wholeText().contains(text)) {
-            System.out.println("Url " + url + " added");
+        if (doc != null && doc.wholeText() != null && doc.wholeText().contains(text)) {
+            System.out.println("Url " + url + " added" + " id = " + Thread.currentThread().getId());
             searchingResults.putIfAbsent(url, new Object());
         }
-        System.out.println("Stop proc");
+        System.out.println("Stop proc. Url = " + url + " id = " + Thread.currentThread().getId());
+        System.out.println("***");
     }
 
     private Document convertToDoc(String url) {
-        File htmlFile = new File(url);
         Document doc = null;
         try {
-            /*
-             * TO DO
-             * Document doc = Jsoup.connect(url).get();
-             * */
-            doc = Jsoup.parse(
-                    htmlFile,
-                    "utf8",
-                    htmlFile.getAbsolutePath());
+            Connection con = Jsoup.connect(url);
+            System.out.println("Connection = " + (con != null) + " id = " + Thread.currentThread().getId());
+            doc = con.get();
         } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Error thread id = " + Thread.currentThread().getId());
+
         }
         return doc;
     }
