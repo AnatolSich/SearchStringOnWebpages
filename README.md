@@ -37,21 +37,7 @@
 2. Напишите, как вы предлагаете тестировать приложение.
 
 
-**Tool execution will look like:**
-
-   java -jar Searcher.jar <input_origin_url> <target_string> 
-
-**For example:**
-
-    java -jar Searcher.jar samples/sample-0-origin.html everything-ok
-    
- **In Main.class one can configure:**
- 
- MAX_SEARCH_DEPTH - max level of web-tree for searching;
- 
- THREADS_NUMBER - quantity of parallel threads for searching.
- 
- LINK_STARTED_WITH - responsible for links pattern to be proceeded.
+**Tool works under MVC pattern with Spring framework**
  
  **Process and results**
  
@@ -73,15 +59,22 @@ Log shows every step of process:
 3. There is thread id in most log messages.
 4. In the end one can see list of urls where required text is found and list of all proceeded urls.  
 
+Interaction with FrontEnd:
+
+1. works on JSP
+2. Can input initial data
+3. Statistics update every 2 sec
+
+Default search parameters:
+developex.initial.url=https://jsoup.org/
+developex.initial.targetString=HTML
+developex.thread.number=5
+developex.search.depthLevel=2
 
 **//TO DO**
 
 Basis of process is done.
 
 Handling of exceptions must be added.
-
-Logger must be replaced with lo4j.
-
-If we need interaction with FrontEnd - code can be refined to MVC pattern with Spring framework.
 
 Unit tests must be created for controller and services methods.
